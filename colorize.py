@@ -6,6 +6,9 @@
 #
 # Author: Martin 'BruXy' Bruchanov, bruchy(at)gmail.com
 #
+# Additional info:
+#   https://algorithmia.com/algorithms/deeplearning/ColorfulImageColorization
+#
 #------------------------------------------------------------------------------
 #<
 #
@@ -41,6 +44,7 @@ from pprint import pprint
 # Global variables #
 ####################
 
+# Algoritmia related
 ALG_BASE_URL = 'http://api.algorithmia.com/v1/'
 ALG_URL_API = ALG_BASE_URL + 'algo/deeplearning/ColorfulImageColorization/1.0.0'
 # + 'data/.algo/deeplearning/ColorfulImageColorization/temp/output.png'
@@ -49,9 +53,9 @@ ALG_API_KEY = ''
 API_KEY_FILE = '.colorize'
 PROTOCOLS = ['http', 'https', 's3', 'dropbox', 'data']
 
+# OS and script related
 HOME = os.path.expanduser("~") + "/"
-#VERBOSE = False
-VERBOSE = True
+VERBOSE = False
 TEST_RUN = False
 SUFFIX = '-colorized'
 OUTPUT_FORMAT = '.png'
@@ -184,6 +188,7 @@ def upload_image(name):
     """Upload image file to the server, get response from API and return download
        URL."""
 
+    mime = 'application/octet-stream'
     print("Processing: {0}".format(name))
     if TEST_RUN == True:
         return ''
@@ -196,12 +201,12 @@ def upload_image(name):
             sys.argv[0], err))
         return ''
 
-    vprint("Sending:\n{0}\nto: {1}".format(http_header(), ALG_URL_API))
+    vprint("Sending:\n{0}\nto: {1}".format(http_header(mime), ALG_URL_API))
     vprint(upload_img)
 
     # Important: image must be send as a stream not as multi-part file!
     response = requests.post(ALG_URL_API, data=upload_img,
-                             headers=http_header()).json()
+                             headers=http_header(mime)).json()
     vprint("HTTP response:\n{0}".format(response))
     upload_img.close()
 
