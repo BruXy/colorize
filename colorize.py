@@ -277,12 +277,6 @@ def download_image(url, filename):
 def main(argv):
     process_cli_options()  # file list in INPUT_FILES
     check_api_key()
-
-    download_url = "http://api.algorithmia.com/v1/connector/data/.algo/deeplearning/ColorfulImageColorization/temp/jungoflat01.png"
-    download_image(download_url, basename(download_url))
-
-    quit()
-
     for filename in INPUT_FILES:
         if filename.split('://')[0] in PROTOCOLS:
             # provided filename is URL
