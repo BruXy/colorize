@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 #
 # CLI utility for sending/receiving images to ColorfulImageColorization
-# via Algoritmia REST API.
+# via Algorithmia REST API.
 #
 # Author: Martin 'BruXy' Bruchanov, bruchy(at)gmail.com
 #
@@ -15,8 +15,8 @@
 # Usage:  colorize.py [OPTIONS]... [FILE]...
 #
 #   FILEs:
-#    * is single or several image files (use shell pattern when necessary)
-#    * it can be also URL: http://, https://, s3://, dropbox://, data://
+#    * is a single or several image files (use shell pattern when necessary)
+#    * can also be URL: http://, https://, s3://, dropbox://, data://
 #
 #   -v, --verbose        ... verbose
 #   -s tag, --suffix tag ... download suffix (default is '-colorized')
@@ -61,6 +61,11 @@ SUFFIX = '-colorized'
 OUTPUT_FORMAT = '.png'
 INPUT_FILES = list()
 
+URL = 'https://algorithmia.com/'
+MSG_ASK_API = ("Please register at: %s \n"   
+    "You need to enter your personal 'Default API key' provided after"
+    " the registration. " % URL )
+
 ########################
 # Function definitions #
 ########################
@@ -101,10 +106,7 @@ def is_valid_api_key():
 
 
 def ask_for_api_key():
-    print("""Please register at: https://algorithmia.com/
-You need to provide your personal 'Default API key' provided after
-the registraion. 
-""")
+    print(MSG_ASK_API)
     api_key = raw_input("Enter your API key: ")
     print("User provided: " + api_key)
     fp = open(HOME + API_KEY_FILE, 'w')
@@ -122,7 +124,8 @@ def check_api_key():
         vprint("API key found: '{0}'".format(api_key))
         ALG_API_KEY = api_key
     except:
-        ask_for_api_key()
+        ask_for_api_key() 
+        check_api_key() # reload saved key
 
 
 def basename(longpath):
