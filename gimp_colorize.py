@@ -17,9 +17,8 @@
 
 import sys
 import os
-sys.path.insert(1, '/home/bruxy/Documents/Algoritmia/colorize/')
-sys.path.insert(2, '/usr/lib64/gimp/2.0/python/')
-
+sys.path.insert(1, '/usr/bin') # location of colorize.py
+#sys.path.insert(2, '/usr/lib64/gimp/2.0/python/')
 import colorize
 import gtk
 import gimpfu
@@ -35,7 +34,7 @@ TEMP = os.path.join(colorize.HOME, '.gimp-2.8', 'tmp') # TODO detect gimp_dir in
 # Function definitions #
 ########################
 
-def _gui_ask_for_api():
+def gui_ask_for_api():
     """Gtk dialog for API key insert."""
     message = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_OK_CANCEL)
     message.set_markup(colorize.MSG_ASK_API.replace(colorize.URL,"<u>" + colorize.URL +"</u>"))
@@ -54,52 +53,65 @@ def _gui_ask_for_api():
     fp.close()
 
 
+def gui_message(text, message_type):
+    """Gtk dialog for error message display"""
+    message = gtk.MessageDialog(type=message_type, buttons=gtk.BUTTONS_CLOSE)
+    message.set_markup(text)
+    entry.connect("activate", lambda _: d.response(gtk.RESPONSE_CLOSE))
+    message.run()
+
+
 def save_tmp_file(image, layer, fullpath):
     """Save current image to temporary folder in PNG format.
 
           Return: saved file path
     """
-    filename = colorize.basename(fullpath) + ".png"
-    fullpath = os.path.join(TEMP, filename) 
+    if fullpath == None: # is not set for new images
+        filename = 'temp.png'
+    else:
+        filename = colorize.basename(fullpath) + ".png"
+
+    fullpath = os.path.join(TEMP, filename)
     gimpfu.pdb.file_png_save(image, layer, fullpath, filename, 0, 9, 1, 1, 1, 1, 1)
     return fullpath
 
 
 def python_colorize(image, layer):
-    """Colorize plugin """
+    """Colorize plugin"""
     image.disable_undo()
     print(image, layer)
     colorize.check_api_key()
-    # 1. Save actual image to $TEMP/.colorize/ as PNG
+
+    # 1. Save actual image to GIMP TEMP direcotry as PNG
     bw_photo = save_tmp_file(image, layer, image.filename)
-
     print("Temp file saved in: " + bw_photo)
+    gimpfu.gimp.progress_init("Uploading image for processing.")
 
-    # 2. Upload it to the server
+    # 2. Upload file to the server
+#    gui_message(
+#        "Image is being processed at <u>{0}</u>.\nIt may take a while.".format(colorize.URL), 
+#        gtk.MESSAGE_INFO
+#    )
+# TODO: information window that data are uploaded. 
     download_url =  colorize.upload_image(bw_photo)
+    if download_url == '': # if empty => error
+        gui_message(colorize.ALG_API_ERR, gtk.MESSAGE_ERROR)
+        gimpfu.gimp.quit()
+    else:
+        print("download_url: " + download_url)
 
-    print("download_url: " + download_url)
-    
-#    download_url = colorize.ALG_URL_DOWNLOAD + '.algo/deeplearning/ColorfulImageColorization/temp/output.png'
-
-    # 3. Download it to the server
+    # 3. Download it from the server
     if download_url:
          color_photo = colorize.download_image(download_url, bw_photo)
-     
-    print("color_photo: " + color_photo) 
-    # 4. Display result as new image
 
+    # 4. Display result as a new image
     if color_photo:
         gimpfu.gimp.Display(
             gimpfu.pdb.file_png_load(color_photo, color_photo)
-       ) 
+        )
+        gimpfu.gimp.progress_init("Colorized data received...")
 
     image.enable_undo()
-
-#gimp.Image(width, height, "RGB")
-#gimp.Display(img)
-
-#gimp.progress_init("Mapping colors...")
 
 
 ####################
@@ -116,7 +128,7 @@ gimpfu.register(
         # author
         "Martin (BruXy) Bruchanov",
         # copyright
-        "Martin (BruXy) Bruchanov",
+        "GNU GPLv3",
         # date
         "2016",
         # menupath
@@ -139,7 +151,7 @@ gimpfu.register(
 ########
 
 # instead of console input invoke GUI window
-colorize.ask_for_api_key = _gui_ask_for_api
+colorize.ask_for_api_key = gui_ask_for_api
 
 # execute plugin
 gimpfu.main()

@@ -4,6 +4,8 @@
 # CLI utility for sending/receiving images to ColorfulImageColorization
 # via Algorithmia REST API.
 #
+# This script also provides functions for GIMP plugin.
+#
 # Author: Martin 'BruXy' Bruchanov, bruchy(at)gmail.com
 #
 # Additional info:
@@ -52,6 +54,7 @@ ALG_URL_DOWNLOAD = ALG_BASE_URL + 'connector/data/'
 ALG_API_KEY = ''
 API_KEY_FILE = '.colorize'
 PROTOCOLS = ['http', 'https', 's3', 'dropbox', 'data']
+ALG_API_ERR = '' # storage for API errors
 
 # OS and script related
 HOME = os.path.expanduser("~") + "/"
@@ -61,6 +64,7 @@ SUFFIX = '-colorized'
 OUTPUT_FORMAT = '.png'
 INPUT_FILES = list()
 
+# Output messages
 URL = 'https://algorithmia.com/'
 MSG_ASK_API = ("Please register at: %s \n"   
     "You need to enter your personal 'Default API key' provided after"
@@ -128,13 +132,6 @@ def check_api_key():
         check_api_key() # reload saved key
 
 
-def basename(longpath):
-    """Get base name of file when path or URL given."""
-    last = longpath.rfind('/')
-    basename = longpath[last + 1:]
-    return basename
-
-
 def output_file(file_name):
     """Put SUFFIX in the file name before the extension"""
     ldot = file_name.rfind('.')
@@ -183,19 +180,16 @@ def http_header(mime_type):
         'Content-Type': mime_type,
         'Authorization': 'Simple ' + ALG_API_KEY
     }
-# return "{{ 'Content-Type' : '{0}', 'Authorization': 'Simple  {1}'
-# }}".format(mime_type, ALG_API_KEY)
 
 
 def upload_image(name):
     """Upload image file to the server, get response from API and return download
        URL."""
 
+    global ALG_API_ERR
     mime = 'application/octet-stream'
     print("Processing: {0}".format(name))
-    if TEST_RUN == True:
-        return ''
-
+    if TEST_RUN: return ''
     # Upload data
     try:
         upload_img = open(name, 'rb')
@@ -214,10 +208,11 @@ def upload_image(name):
     upload_img.close()
 
     if "error" in response:
-        print("ERROR from API: " + r.json()["error"]["message"])
+        ALG_API_ERR = "ERROR from API: " + r.json()["error"]["message"] 
+        print(ALG_API_ERR, file=sys.stderr)
         return ''
     else:
-        # Example of good response:
+        # Example of a good response:
         # u'{"result":
         #    {"output":"data://.algo/deeplearning/ColorfulImageColorization/temp/output.png"},
         #    "metadata":{
@@ -234,6 +229,7 @@ def upload_image(name):
 def provide_url(url):
     """Send JSON object with image URL."""
     print("Processing remote file: {0}".format(url))
+    if TEST_RUN: return ''
     response = requests.post(
         ALG_URL_API, json={"image": url}, headers=http_header('application/json'))
     vprint("HTTP response:\n{0}".format(response.json()))
@@ -248,7 +244,10 @@ def provide_url(url):
 
 def download_image(url, filename):
     """Download output image and save it to file with the same name as input +
-       suffix SUFFIX, output is in PNG format."""
+       suffix SUFFIX, output is in PNG format.
+
+          Return: file name of saved file
+    """
 
     # Download URL is usually:
     # https://api.algorithmia.com/v1/connector/data/.algo/deeplearning/ColorfulImageColorization/temp/output.png
@@ -272,6 +271,7 @@ def download_image(url, filename):
             fw.write(chunk)
         fw.close()
         vprint("Output saved to: '{0}'".format(name))
+        return name
     else:
         print('Error when accessing URL!', file=sys.stderr)
         sys.exit(1)
@@ -290,7 +290,7 @@ def main(argv):
             # provided filename is URL
             download_url = provide_url(filename)
             if download_url:
-                download_image(download_url, basename(download_url))
+                download_image(download_url, os.path.basename(download_url))
         else:
             # provided filename is disk file
             download_url = upload_image(filename)
