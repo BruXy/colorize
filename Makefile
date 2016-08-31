@@ -22,7 +22,7 @@ install: $(FILE_LIST)
 	install README.md LICENSE $(DESTDIR_DOCS)
 
 uninstall: $(DESTDIR_PLUGIN)/gimp_colorize.py $(DESTDIR_SCRIPT)/colorize.py $(DESTDIR_DOCS)
-	echo rm -f $^
+	rm -rf $^
 
 tarball: $(TAR_BALL)
 
