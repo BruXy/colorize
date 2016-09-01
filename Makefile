@@ -2,7 +2,7 @@
 
 PROJECT=colorize
 VERSION=1.0
-BUILD=1
+BUILD=2
 
 DESTDIR_PLUGIN=/usr/lib64/gimp/2.0/plug-ins/
 DESTDIR_SCRIPT=/usr/bin
@@ -29,4 +29,8 @@ tarball: $(TAR_BALL)
 $(TAR_BALL): $(FILE_LIST)
 	cd ..; tar cvjf $@ colorize/{$(shell tr ' ' ',' <<< "$^")}
 	mv ../$@ .	
+
+ChangeLog:
+	git log --pretty=format:"* %aD, %an <%ae> %s %n%b" --date=short | \
+        sed -e 's/\[/\n\t[/' -e 's/^-/\t-/' > ChangeLog
 

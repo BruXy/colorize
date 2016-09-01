@@ -18,7 +18,7 @@
 import sys
 import os
 sys.path.insert(1, '/usr/bin') # location of colorize.py
-#sys.path.insert(2, '/usr/lib64/gimp/2.0/python/')
+sys.path.insert(2, '/usr/lib64/gimp/2.0/python/')
 import colorize
 import gtk
 import gimpfu
@@ -51,15 +51,21 @@ def gui_ask_for_api():
     fp = open(colorize.HOME + colorize.API_KEY_FILE, 'w')
     fp.write("YOUR_API_KEY={0}{1}".format(api_key, os.linesep))
     fp.close()
-
+    
+    # process buttong click immediately
+    message.destroy()
+    while gtk.events_pending():
+        gtk.main_iteration()
+     
 
 def gui_message(text, message_type):
     """Gtk dialog for error message display"""
     message = gtk.MessageDialog(type=message_type, buttons=gtk.BUTTONS_CLOSE)
     message.set_markup(text)
-    entry.connect("activate", lambda _: d.response(gtk.RESPONSE_CLOSE))
     message.run()
-
+    message.destroy()
+    while gtk.events_pending():
+        gtk.main_iteration()
 
 def save_tmp_file(image, layer, fullpath):
     """Save current image to temporary folder in PNG format.
@@ -69,7 +75,7 @@ def save_tmp_file(image, layer, fullpath):
     if fullpath == None: # is not set for new images
         filename = 'temp.png'
     else:
-        filename = colorize.basename(fullpath) + ".png"
+        filename = os.path.basename(fullpath) + ".png"
 
     fullpath = os.path.join(TEMP, filename)
     gimpfu.pdb.file_png_save(image, layer, fullpath, filename, 0, 9, 1, 1, 1, 1, 1)

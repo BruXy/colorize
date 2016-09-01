@@ -125,8 +125,11 @@ def check_api_key():
     try:
         fp = open(HOME + API_KEY_FILE, 'r')
         api_key = fp.readline().rstrip(os.linesep).split('=')[1]
-        vprint("API key found: '{0}'".format(api_key))
-        ALG_API_KEY = api_key
+        if len(api_key) > 16 and ' ' not in api_key:
+            vprint("API key found: '{0}'".format(api_key))
+            ALG_API_KEY = api_key
+        else:
+            raise ValueError('Valid API key not found.')   
     except:
         ask_for_api_key() 
         check_api_key() # reload saved key
@@ -208,7 +211,8 @@ def upload_image(name):
     upload_img.close()
 
     if "error" in response:
-        ALG_API_ERR = "ERROR from API: " + r.json()["error"]["message"] 
+#        ALG_API_ERR = "ERROR from API: " + response.json()["error"]["message"] 
+        ALG_API_ERR = "ERROR from API: " + response["error"]["message"] 
         print(ALG_API_ERR, file=sys.stderr)
         return ''
     else:
