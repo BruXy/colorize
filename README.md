@@ -23,7 +23,7 @@ results back in GUI. The plug-in is invoked by *Filters → Artistic →
 Colorize...*  On your first try, you will be asked to provide your API key
 which is stored in the same configuration file as described above.
 
-##Usage
+## Usage
 
 ### Installation
 
@@ -55,7 +55,7 @@ directory where the file is located. In this case, update line:
 
 ```
 
-###GIMP plug-in
+### GIMP plug-in
 
 The plug-in is installed by default into ``/usr/lib64/gimp/2.0/plug-ins/``. Restart
 GIMP and plug-in will be available in menu: *Filters → Artistic → Colorize...*
@@ -65,12 +65,12 @@ menu, your image is sent to the server, processed, downloaded  and displayed as
 a new image in GIMP GUI. No progress bar is available because the image is processed
 online and server response time differs.
 
-##Known issues
+## Known issues
 
 Sometimes data processing fails and the  server returns the following error; in this
 case try the command again.
 
-```
+```json
 {u'metadata':
 	{u'duration': 0},
 	u'error': {
@@ -79,7 +79,7 @@ case try the command again.
 }
 ```
 
-##Resources
+## Resources
 
 * [Colorful Image Colorization, scientific paper](https://arxiv.org/abs/1603.08511v3)
 
