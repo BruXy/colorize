@@ -12,24 +12,22 @@
 #   https://algorithmia.com/algorithms/deeplearning/ColorfulImageColorization
 #
 #------------------------------------------------------------------------------
-#<
-#
-# Usage:  colorize.py [OPTIONS]... [FILE]...
-#
-#   FILEs:
-#    * is a single or several image files (use shell pattern when necessary)
-#    * can also be URL: http://, https://, s3://, dropbox://, data://
-#
-#   -v, --verbose        ... verbose
-#   -s tag, --suffix tag ... download suffix (default is '-colorized')
-#   -t, --test-run       ... do nothing and show what will be done
-#   -h, --help           ... help
-#
-# You need to register at https://algorithmia.com/ and obtain personal API key.
-# This key will be stored in your home directory in .colorize file or hard code
-# it into this script as ALG_API_KEY constant.
-#
-#>
+"""
+Usage:  colorize.py [OPTIONS]... [FILE]...
+
+  FILEs:
+   * is a single or several image files (use shell pattern when necessary)
+   * can also be URL: http://, https://, s3://, dropbox://, data://
+
+  -v, --verbose        ... verbose
+  -s tag, --suffix tag ... download suffix (default is '-colorized')
+  -t, --test-run       ... do nothing and show what will be done
+  -h, --help           ... help
+
+You need to register at https://algorithmia.com/ and obtain personal API key.
+This key will be stored in your home directory in .colorize file or hard code
+it into this script as ALG_API_KEY constant.
+"""
 
 ###########
 # Imports #
@@ -54,7 +52,7 @@ ALG_URL_DOWNLOAD = ALG_BASE_URL + 'connector/data/'
 ALG_API_KEY = ''
 API_KEY_FILE = '.colorize'
 PROTOCOLS = ['http', 'https', 's3', 'dropbox', 'data']
-ALG_API_ERR = '' # storage for API errors
+ALG_API_ERR = ''  # storage for API errors
 
 # OS and script related
 HOME = os.path.expanduser("~") + "/"
@@ -66,9 +64,9 @@ INPUT_FILES = list()
 
 # Output messages
 URL = 'https://algorithmia.com/'
-MSG_ASK_API = ("Please register at: %s \n"   
-    "You need to enter your personal 'Default API key' provided after"
-    " the registration. " % URL )
+MSG_ASK_API = ("Please register at: %s \n"
+               "You need to enter your personal 'Default API key' provided after"
+               " the registration. " % URL)
 
 ########################
 # Function definitions #
@@ -76,21 +74,8 @@ MSG_ASK_API = ("Please register at: %s \n"
 
 
 def print_help():
-    """Print help encoded as initial script's comment between #< and #>."""
-    show_line = False
-    fp = open(sys.argv[0], 'r')
-
-    for line in fp:
-        if line[0:2] == '#<':  # start token
-            show_line = True
-            continue
-        elif line[0:2] == '#>':  # end token
-            return
-
-        if show_line == True:
-            print(line.rstrip(os.linesep)[1:])
-
-    fp.close()
+    """Print help initial docs of the script."""
+    print(__doc__)
 
 
 def vprint(*args):
@@ -129,10 +114,10 @@ def check_api_key():
             vprint("API key found: '{0}'".format(api_key))
             ALG_API_KEY = api_key
         else:
-            raise ValueError('Valid API key not found.')   
+            raise ValueError('Valid API key not found.')
     except:
-        ask_for_api_key() 
-        check_api_key() # reload saved key
+        ask_for_api_key()
+        check_api_key()  # reload saved key
 
 
 def output_file(file_name):
@@ -192,7 +177,8 @@ def upload_image(name):
     global ALG_API_ERR
     mime = 'application/octet-stream'
     print("Processing: {0}".format(name))
-    if TEST_RUN: return ''
+    if TEST_RUN:
+        return ''
     # Upload data
     try:
         upload_img = open(name, 'rb')
@@ -211,8 +197,8 @@ def upload_image(name):
     upload_img.close()
 
     if "error" in response:
-#        ALG_API_ERR = "ERROR from API: " + response.json()["error"]["message"] 
-        ALG_API_ERR = "ERROR from API: " + response["error"]["message"] 
+        #        ALG_API_ERR = "ERROR from API: " + response.json()["error"]["message"]
+        ALG_API_ERR = "ERROR from API: " + response["error"]["message"]
         print(ALG_API_ERR, file=sys.stderr)
         return ''
     else:
@@ -233,7 +219,8 @@ def upload_image(name):
 def provide_url(url):
     """Send JSON object with image URL."""
     print("Processing remote file: {0}".format(url))
-    if TEST_RUN: return ''
+    if TEST_RUN:
+        return ''
     response = requests.post(
         ALG_URL_API, json={"image": url}, headers=http_header('application/json'))
     vprint("HTTP response:\n{0}".format(response.json()))
@@ -302,6 +289,7 @@ def main(argv):
                 download_image(download_url, filename)
 
     quit()
+
 
 if __name__ == "__main__":
     main(sys.argv)
